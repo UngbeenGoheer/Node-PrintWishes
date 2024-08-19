@@ -111,7 +111,7 @@ exports.getProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     trimObjects(req.body);
-    //const { id } = req.user;
+    const { id } = req.user;
     const product = await Product.findOne({
       _id: req.params.id,
       userId: id,
@@ -164,7 +164,7 @@ exports.updateProduct = async (req, res) => {
 /** Delete Product */
 exports.deleteProduct = async (req, res) => {
   try {
-    //const { id } = req.user;
+    const { id } = req.user;
     const PrDct = await Product.findOneAndDelete({
       _id: req.params.id,
       userId: id,
@@ -240,7 +240,7 @@ exports.discount = async (req, res) => {
 /** Set Product Featured  */
 exports.setProductFeatured = async (req, res) => {
   try {
-    //const { id } = req.user;
+    const { id } = req.user;
     const product = await Product.findOneAndUpdate(
       { _id: req.params.id, userId: id, sliderId: id, categoryId: id },
       { $set: { featuredProduct: true } },
@@ -294,7 +294,7 @@ exports.getAllFeaturedProducts = async (req, res) => {
 /** Set Product Featured */
 exports.setProductNewArrival = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { id } = req.user;
     const newArrival = await new newArrival.findOneAndUpdate(
       { _id: req.params.id, userId: id, sliderId: id, categoryId: id },
       { $set: { newArrival: true } },
