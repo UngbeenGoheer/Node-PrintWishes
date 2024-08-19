@@ -39,8 +39,8 @@ exports.createProduct = async (req, res) => {
       req.body.priceAfterDiscount = priceBeforeDiscount;
     }
 
-    req.body.createdBy = id;
-    const newProduct = await Product.create(req.body);
+    // req.body.createdBy = id;
+    const newProduct = await Product.create({ ...req.body, createdBy: id });
     res.status(201).json({
       success: true,
       message: "Product created successfully.",
