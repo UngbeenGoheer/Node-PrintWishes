@@ -1,27 +1,35 @@
 const productRouter = require("express").Router();
 const { upload } = require("../utils/uploads");
-/**Product Routes */
+const { loginAuth } = require("../middleware/loginAuth");
+/** Controllers */
 const {
-  newProduct,
+  createProduct,
   getAllProduct,
   getProduct,
-  UpdateProduct,
-  DeleteProduct,
+  updateProduct,
+  deleteProduct,
   discount,
-  featuredProduct,
-  newArrivals,
-  makeProduct,
-  makeArrivals,
+  setProductFeatured,
+  getAllFeaturedProducts,
+  setProductNewArrival,
+  getAllNewArrivalProducts,
 } = require("../controllers/productController");
-productRouter.post("/create", upload.any("images"), newProduct);
+
+/** Routes */
+productRouter.post("/create", loginAuth, upload.any("images"), createProduct);
 productRouter.get("/getAll", getAllProduct);
 productRouter.get("/get/:id", getProduct);
-productRouter.get("/update/:id", upload.any("images"), UpdateProduct);
-productRouter.delete("/delete/:id", DeleteProduct);
-productRouter.patch("/discount/:productId", discount);
-productRouter.get("/products/featured", featuredProduct);
-productRouter.get("/products/new-arrivals", newArrivals);
-productRouter.get("/update", makeProduct);
-productRouter.get("/update/arrival", makeArrivals);
+productRouter.get(
+  "/update/:id",
+  loginAuth,
+  upload.any("images"),
+  updateProduct
+);
+productRouter.delete("/delete/:id", loginAuth, deleteProduct);
+productRouter.patch("/discount/:productId", loginAuth, discount);
+productRouter.get("/setFeatured/:id", loginAuth, setProductFeatured);
+productRouter.get("/getAll/featured", getAllFeaturedProducts);
+productRouter.get("/setNewArrival/:id", loginAuth, setProductNewArrival);
+productRouter.get("/getAll/newArrivals", getAllNewArrivalProducts);
 
 module.exports = { productRouter };

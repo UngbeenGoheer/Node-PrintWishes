@@ -33,18 +33,21 @@ const productSchema = new mongoose.Schema(
         type: String,
       },
     ],
-    users: {
+
+    featuredProduct: {
+      type: Boolean,
+      default: false,
+    },
+
+    newArrival: {
+      type: Boolean,
+      default: false,
+    },
+
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    featured_product: {
-      type: Boolean,
-      default: false,
-    },
-    product_new_arrival: {
-      type: Boolean,
-      default: false,
     },
   },
   { timestamps: true, collection: "Products" }
