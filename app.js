@@ -14,6 +14,7 @@ const { productRouter } = require("./routes/productRoutes");
 const { categoryRouter } = require("./routes/categoryRoutes");
 const { jobRouter } = require("./routes/jobRoutes");
 const { applyRouter } = require("./routes/applyroutes");
+const { orderRouter } = require("./routes/orderroutes");
 
 /**Tested Route  */
 
@@ -28,6 +29,7 @@ app.use("/api/v1/product", productRouter);
 app.use("/api/v1/contact", contactRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/apply", applyRouter);
+app.use("/api/v1/order", orderRouter);
 /**Server Setup**/
 const Start = async (req, res) => {
   try {

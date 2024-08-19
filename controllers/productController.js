@@ -3,7 +3,7 @@ const { Product } = require("../models/productModels");
 /** Create Prodcut */
 exports.newProduct = async (req, res) => {
   try {
-    trimObjects(req.body);
+    // trimObjects(req.body);
 
     const {
       name,
@@ -90,7 +90,7 @@ exports.getAllProduct = async (req, res) => {
 /** Get Product Details */
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate("User");
     if (!product) {
       return res
         .status(404)
@@ -125,8 +125,8 @@ exports.UpdateProduct = async (req, res) => {
       product.name = req.body.name;
     }
 
-    if (req?.body?.description) {
-      product.description = req.body.description;
+    if (req?.body?.discription) {
+      product.discription = req.body.discription;
     }
 
     if (req?.body?.priceBeforeDiscount) {

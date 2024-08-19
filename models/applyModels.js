@@ -27,6 +27,11 @@ const applySchema = new mongoose.Schema(
     Choosefile: {
       type: String,
     },
+    jobs: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Job",
+      required: true,
+    },
   },
   { timestamps: true }
 );

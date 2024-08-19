@@ -17,6 +17,11 @@ const cetagorySchema = new mongoose.Schema(
         type: String,
       },
     ],
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
   },
   {
     timestamps: true,
