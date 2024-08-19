@@ -54,11 +54,6 @@ const productSchema = new mongoose.Schema(
       ref: "Slider",
       required: true,
     },
-    categoryId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
-    },
   },
   { timestamps: true, collection: "Products" }
 );
