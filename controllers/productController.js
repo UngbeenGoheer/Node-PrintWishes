@@ -7,8 +7,8 @@ exports.createProduct = async (req, res) => {
   try {
     trimObjects(req.body);
 
-    const { name, discription, priceBeforeDiscount, createdBy, sliderId } =
-      req.body;
+    const { id } = req.user;
+    const { name, discription, priceBeforeDiscount } = req.body;
 
     if (!(name && discription && priceBeforeDiscount)) {
       console.error("Name, discription and Price are required fields.");
@@ -40,11 +40,7 @@ exports.createProduct = async (req, res) => {
     }
 
     // req.body.createdBy = id;
-    const newProduct = await Product.create({
-      ...req.body,
-      createdBy: id,
-      sliderId: id,
-    });
+    const newProduct = await Product.create({ ...req.body, createdBy: id });
     res.status(201).json({
       success: true,
       message: "Product created successfully.",
@@ -62,7 +58,6 @@ exports.getAllProduct = async (req, res) => {
   try {
     const products = await Product.find().populate(
       "User",
-      "Slider",
       minusUserPrivateFields
     );
 
@@ -90,7 +85,6 @@ exports.getProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate(
       "User",
-      "Slider",
       minusUserPrivateFields
     );
     if (!product) {
@@ -114,10 +108,9 @@ exports.getProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     trimObjects(req.body);
-    // const { id } = req.user;
+    const { id } = req.user;
     const product = await Product.findOne({
       _id: req.params.id,
-      sliderId: id,
       createdBy: id,
     });
 
@@ -166,11 +159,10 @@ exports.updateProduct = async (req, res) => {
 /** Delete Product */
 exports.deleteProduct = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { id } = req.user;
     const PrDct = await Product.findOneAndDelete({
       _id: req.params.id,
       createdBy: id,
-      sliderId: id,
     });
 
     if (!PrDct)
@@ -201,11 +193,7 @@ exports.discount = async (req, res) => {
       });
     }
 
-    const product = await Product.findOne({
-      _id: productId,
-      createdBy: id,
-      slideId: id,
-    });
+    const product = await Product.findOne({ _id: productId, createdBy: id });
 
     if (!product) {
       console.error("Invalid product id.");
@@ -240,9 +228,9 @@ exports.discount = async (req, res) => {
 /** Set Product Featured  */
 exports.setProductFeatured = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { id } = req.user;
     const product = await Product.findOneAndUpdate(
-      { _id: req.params.id, createdBy: id, slideId: id },
+      { _id: req.params.id, createdBy: id },
       { $set: { featuredProduct: true } },
       {
         new: true,
@@ -273,7 +261,7 @@ exports.getAllFeaturedProducts = async (req, res) => {
   try {
     const featuredProducts = await Product.find({
       featuredProduct: true,
-    }).populate("User", "Slide", minusUserPrivateFields);
+    }).populate("User", minusUserPrivateFields);
     if (featuredProducts.length === 0) {
       res
         .status(404)
@@ -291,9 +279,9 @@ exports.getAllFeaturedProducts = async (req, res) => {
 /** Set Product Featured */
 exports.setProductNewArrival = async (req, res) => {
   try {
-    // const { id } = req.user;
+    const { id } = req.user;
     const newArrival = await new newArrival.findOneAndUpdate(
-      { _id: req.params.id, createdBy: id, sliderId: id },
+      { _id: req.params.id, createdBy: id },
       { $set: { newArrival: true } },
       {
         new: true,
