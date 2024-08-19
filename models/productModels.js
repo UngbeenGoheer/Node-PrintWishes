@@ -49,6 +49,11 @@ const productSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    sliderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Slider",
+      required: true,
+    },
   },
   { timestamps: true, collection: "Products" }
 );
