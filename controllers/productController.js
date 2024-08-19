@@ -1,31 +1,20 @@
+const { minusUserPrivateFields } = require("../constants");
 const { Product } = require("../models/productModels");
+const { trimObjects } = require("../utils/trimObjects");
 
 /** Create Prodcut */
-exports.newProduct = async (req, res) => {
+exports.createProduct = async (req, res) => {
   try {
-    // trimObjects(req.body);
+    trimObjects(req.body);
 
-    const {
-      name,
-      description,
-      priceBeforeDiscount,
-      featured_product,
-      product_new_arrival,
-    } = req.body;
+    const { id } = req.user;
+    const { name, discription, priceBeforeDiscount } = req.body;
 
-    if (
-      !(
-        name &&
-        description &&
-        priceBeforeDiscount &&
-        featured_product &&
-        product_new_arrival
-      )
-    ) {
-      console.error("Name, Description and Price are required fields.");
+    if (!(name && discription && priceBeforeDiscount)) {
+      console.error("Name, discription and Price are required fields.");
       return res.status(400).json({
         success: false,
-        message: "Name, Description and Price are required fields.",
+        message: "Name, discription and Price are required fields.",
       });
     }
 
@@ -50,6 +39,7 @@ exports.newProduct = async (req, res) => {
       req.body.priceAfterDiscount = priceBeforeDiscount;
     }
 
+    req.body.createdBy = id;
     const newProduct = await Product.create(req.body);
     res.status(201).json({
       success: true,
@@ -63,10 +53,13 @@ exports.newProduct = async (req, res) => {
   }
 };
 
-/** GetAll details */
+/** Get All Products */
 exports.getAllProduct = async (req, res) => {
   try {
-    const products = await Product.find().populate("User");
+    const products = await Product.find().populate(
+      "User",
+      minusUserPrivateFields
+    );
 
     if (products.length === 0) {
       res.status(200).json({
@@ -90,7 +83,10 @@ exports.getAllProduct = async (req, res) => {
 /** Get Product Details */
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("User");
+    const product = await Product.findById(req.params.id).populate(
+      "User",
+      minusUserPrivateFields
+    );
     if (!product) {
       return res
         .status(404)
@@ -108,11 +104,15 @@ exports.getProduct = async (req, res) => {
   }
 };
 
-/** UpdateProduct */
-exports.UpdateProduct = async (req, res) => {
+/** Update Product */
+exports.updateProduct = async (req, res) => {
   try {
     trimObjects(req.body);
-    const product = await Product.findOne({ _id: req.params.id });
+    const { id } = req.user;
+    const product = await Product.findOne({
+      _id: req.params.id,
+      createdBy: id,
+    });
 
     if (!product) {
       console.error("Product not found");
@@ -132,14 +132,12 @@ exports.UpdateProduct = async (req, res) => {
     if (req?.body?.priceBeforeDiscount) {
       product.priceBeforeDiscount = req.body.priceBeforeDiscount;
 
-      if (product.discount !== 0) {
-        const discountAmount =
-          product.priceBeforeDiscount * (product.discount / 100);
+      const discountAmount =
+        product.priceBeforeDiscount * (product.discount / 100);
 
-        const finalPrice = (product.priceBeforeDiscount = discountAmount);
+      const finalPrice = (product.priceBeforeDiscount = discountAmount);
 
-        product.priceAfterDiscount = finalPrice;
-      }
+      product.priceAfterDiscount = finalPrice;
     }
 
     if (req?.files.length !== 0) {
@@ -148,7 +146,7 @@ exports.UpdateProduct = async (req, res) => {
       );
     }
 
-    product.save();
+    await product.save();
 
     res
       .status(200)
@@ -158,10 +156,14 @@ exports.UpdateProduct = async (req, res) => {
   }
 };
 
-/** DeleteProduct */
-exports.DeleteProduct = async (req, res) => {
+/** Delete Product */
+exports.deleteProduct = async (req, res) => {
   try {
-    const PrDct = await Product.findByIdAndDelete(req.params.id);
+    const { id } = req.user;
+    const PrDct = await Product.findOneAndDelete({
+      _id: req.params.id,
+      createdBy: id,
+    });
 
     if (!PrDct)
       return res
@@ -179,6 +181,7 @@ exports.DeleteProduct = async (req, res) => {
 exports.discount = async (req, res) => {
   try {
     // Distructuring `productId` from params object
+    const { id } = req.user;
     const { productId } = req.params;
     const { discount } = req.body;
 
@@ -190,7 +193,7 @@ exports.discount = async (req, res) => {
       });
     }
 
-    const product = await Product.findOne({ _id: productId });
+    const product = await Product.findOne({ _id: productId, createdBy: id });
 
     if (!product) {
       console.error("Invalid product id.");
@@ -221,10 +224,44 @@ exports.discount = async (req, res) => {
     });
   }
 };
-// Get all featured products
-exports.featuredProduct = async (req, res) => {
+
+/** Set Product Featured  */
+exports.setProductFeatured = async (req, res) => {
   try {
-    const featuredProducts = await Product.find({ featured_product: true });
+    const { id } = req.user;
+    const product = await Product.findOneAndUpdate(
+      { _id: req.params.id, createdBy: id },
+      { $set: { featuredProduct: true } },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      }
+    );
+
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: true, message: "Product not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Product set as feature successfully.",
+      data: product,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**  Get All Featured Products */
+exports.getAllFeaturedProducts = async (req, res) => {
+  try {
+    const featuredProducts = await Product.find({
+      featuredProduct: true,
+    }).populate("User", minusUserPrivateFields);
     if (featuredProducts.length === 0) {
       res
         .status(404)
@@ -238,58 +275,17 @@ exports.featuredProduct = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-/**Feature Updating  */
-exports.makeProduct = async (req, res) => {
+
+/** Set Product Featured */
+exports.setProductNewArrival = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { $set: { featured_product: true } },
+    const { id } = req.user;
+    const newArrival = await new newArrival.findOneAndUpdate(
+      { _id: req.params.id, createdBy: id },
+      { $set: { newArrival: true } },
       {
         new: true,
-        runValidators: true,
-      }
-    );
-    if (!product) {
-      return res
-        .status(404)
-        .json({ success: true, message: "Product not found" });
-    }
-    return res.status(200).json({
-      success: true,
-      message: "Product set as feature successfully.",
-      data: product,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-
-/**New_Arrivals  */
-exports.newArrivals = async (req, res) => {
-  try {
-    const newArrivals = await Product.find({ product_new_arrival: true });
-    if (newArrivals.length === 0) {
-      res
-        .status(404)
-        .json({ success: false, message: "New Arrivals not found" });
-    }
-
-    newArrivals.save();
-
-    res.status(200).json({ success: true, message: "New arrival" });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-/**Feature Updating  */
-exports.makeArrivals = async (req, res) => {
-  try {
-    const newArrival = await new product_new_arrival.findByIdAndUpdate(
-      req.params.id,
-      { $set: { product_new_arrival: true } },
-      {
-        new: true,
+        upsert: true,
         runValidators: true,
       }
     );
@@ -305,6 +301,24 @@ exports.makeArrivals = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/** Get All New Arrival Products  */
+exports.getAllNewArrivalProducts = async (req, res) => {
+  try {
+    const newArrivals = await Product.find({ newArrival: true });
+    if (newArrivals.length === 0) {
+      res
+        .status(404)
+        .json({ success: false, message: "New Arrivals not found" });
+    }
+
+    newArrivals.save();
+
+    res.status(200).json({ success: true, message: "New arrival" });
+  } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };

@@ -24,7 +24,6 @@ exports.Apply_now = async (req, res) => {
       success: true,
       message: "Apply successfully.",
       data: newApply,
-      jobs: jobs.id,
     });
   } catch (error) {
     console.error(error);
@@ -34,7 +33,7 @@ exports.Apply_now = async (req, res) => {
 /**GetAll */
 exports.GetAllApplicants = async (req, res) => {
   try {
-    const allApplicants = await Apply_now.find().populate("Job");
+    const allApplicants = await Apply_now.find({});
     if (allApplicants.length === 0) {
       res.status(404).josn({
         success: true,
@@ -55,7 +54,7 @@ exports.GetAllApplicants = async (req, res) => {
 /**Get One  */
 exports.getOneApplicant = async (req, res) => {
   try {
-    const applicant = await Apply_now(req.params.id).populate("Job");
+    const applicant = await Apply_now(req.params.id);
     if (!applicant) {
       return res
         .status(404)

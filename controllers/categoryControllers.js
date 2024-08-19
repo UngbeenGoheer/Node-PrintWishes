@@ -3,7 +3,7 @@ const { Category } = require("../models/categoryModels");
 /**Create category */
 exports.newCategory = async (req, res) => {
   try {
-    // trimObjects(req.body);
+    trimObjects(req.body);
     const { title, description } = req.body;
     if (!(title && description)) {
       console.error("title and Description are required fields.");
@@ -29,7 +29,6 @@ exports.newCategory = async (req, res) => {
       success: true,
       message: "Category created successfully.",
       data: newCategory,
-      product: product.id,
     });
   } catch (error) {
     console.error(error);
@@ -39,7 +38,7 @@ exports.newCategory = async (req, res) => {
 /**GetAll */
 exports.getAllCategory = async (req, res) => {
   try {
-    const categories = await Category.find().populate("Product");
+    const categories = await Category.find().populate("Slider");
     if (categories.length === 0) {
       res.status(200).json({
         success: true,
@@ -55,7 +54,7 @@ exports.getAllCategory = async (req, res) => {
 /**GetOne  */
 exports.getOnecategory = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id).populate("Product");
+    const category = await Category.findById(req.params.id).populate("Slider");
     if (!category) return res.status(404).json({ error: "Category not found" });
 
     res.status(200).json({ success: true, message: category });
