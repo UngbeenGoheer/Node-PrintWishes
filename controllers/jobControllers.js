@@ -11,6 +11,7 @@ exports.newJob = async (req, res) => {
       designation,
       description,
       responsibilities,
+      applyId,
     } = req.body;
     if (
       !(
@@ -19,19 +20,13 @@ exports.newJob = async (req, res) => {
         date &&
         designation &&
         description &&
-        responsibilities
+        responsibilities &&
+        applyId
       )
     ) {
       console.log("All fields are required");
     }
-    const newjob = await Job.create(
-      title,
-      location,
-      date,
-      designation,
-      description,
-      responsibilities
-    );
+    const newjob = await Job.create(req.body);
 
     res.status(201).json({
       success: true,
@@ -46,7 +41,7 @@ exports.newJob = async (req, res) => {
 /** GetAll details */
 exports.getAllJob = async (req, res) => {
   try {
-    const jobs = await Job.find({});
+    const jobs = await Job.find({}).populate("Apply_now");
 
     if (Job.length === 0) {
       res.status(200).json({
@@ -68,7 +63,7 @@ exports.getAllJob = async (req, res) => {
 /** Get Job Details */
 exports.getJob = async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id);
+    const job = await Job.findById(req.params.id).populate("Apply_now");
     if (!job) {
       return res.status(404).json({ success: true, message: "Job not found" });
     }
@@ -86,7 +81,8 @@ exports.getJob = async (req, res) => {
 /**Updatejob */
 exports.Updatejob = async (req, res) => {
   try {
-    const job = await Job.findOne({ _id: req.params.id });
+    trimObjects(req.body);
+    const job = await Job.findOne({ _id: req.params.id, applyId: id });
     if (!user) {
       console.error("Job not found");
       return res.status(404).json({ success: false, message: "JOb not found" });
@@ -122,7 +118,10 @@ exports.Updatejob = async (req, res) => {
 /**DeleteUser */
 exports.Deletejob = async (req, res) => {
   try {
-    const job = await Job.findByIdAndDelete(req.params.id);
+    const job = await Job.findByIdAndDelete({
+      _id: req.params.id,
+      applyId: id,
+    });
     if (!job)
       return res.status(404).json({ success: false, error: "Job not found" });
 

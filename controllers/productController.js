@@ -8,9 +8,12 @@ exports.createProduct = async (req, res) => {
     trimObjects(req.body);
 
     const { id } = req.user;
-    const { name, discription, priceBeforeDiscount } = req.body;
+    const { name, discription, priceBeforeDiscount, sliderId, categoryId } =
+      req.body;
 
-    if (!(name && discription && priceBeforeDiscount)) {
+    if (
+      !(name && discription && priceBeforeDiscount && sliderId && categoryId)
+    ) {
       console.error("Name, discription and Price are required fields.");
       return res.status(400).json({
         success: false,
@@ -39,13 +42,13 @@ exports.createProduct = async (req, res) => {
       req.body.priceAfterDiscount = priceBeforeDiscount;
     }
 
-    req.body.createdBy = id;
+    req.body.userId = id;
+
     const newProduct = await Product.create(req.body);
     res.status(201).json({
       success: true,
       message: "Product created successfully.",
       data: newProduct,
-      users: user.id,
     });
   } catch (error) {
     console.error(error);
@@ -56,10 +59,10 @@ exports.createProduct = async (req, res) => {
 /** Get All Products */
 exports.getAllProduct = async (req, res) => {
   try {
-    const products = await Product.find().populate(
-      "User",
-      minusUserPrivateFields
-    );
+    const products = await Product.find()
+      .populate("User", minusUserPrivateFields)
+      .populate("Slider")
+      .populate("Category");
 
     if (products.length === 0) {
       res.status(200).json({
@@ -83,10 +86,10 @@ exports.getAllProduct = async (req, res) => {
 /** Get Product Details */
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate(
-      "User",
-      minusUserPrivateFields
-    );
+    const product = await Product.findById(req.params.id)
+      .populate("User", minusUserPrivateFields)
+      .populate("Slider")
+      .populate("Category");
     if (!product) {
       return res
         .status(404)
@@ -108,10 +111,12 @@ exports.getProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     trimObjects(req.body);
-    const { id } = req.user;
+    //const { id } = req.user;
     const product = await Product.findOne({
       _id: req.params.id,
-      createdBy: id,
+      userId: id,
+      sliderId: id,
+      categoryId: id,
     });
 
     if (!product) {
@@ -159,10 +164,12 @@ exports.updateProduct = async (req, res) => {
 /** Delete Product */
 exports.deleteProduct = async (req, res) => {
   try {
-    const { id } = req.user;
+    //const { id } = req.user;
     const PrDct = await Product.findOneAndDelete({
       _id: req.params.id,
-      createdBy: id,
+      userId: id,
+      sliderId: id,
+      categoryId: id,
     });
 
     if (!PrDct)
@@ -193,7 +200,12 @@ exports.discount = async (req, res) => {
       });
     }
 
-    const product = await Product.findOne({ _id: productId, createdBy: id });
+    const product = await Product.findOne({
+      _id: productId,
+      userId: id,
+      sliderId: id,
+      categoryId: id,
+    });
 
     if (!product) {
       console.error("Invalid product id.");
@@ -228,9 +240,9 @@ exports.discount = async (req, res) => {
 /** Set Product Featured  */
 exports.setProductFeatured = async (req, res) => {
   try {
-    const { id } = req.user;
+    //const { id } = req.user;
     const product = await Product.findOneAndUpdate(
-      { _id: req.params.id, createdBy: id },
+      { _id: req.params.id, userId: id, sliderId: id, categoryId: id },
       { $set: { featuredProduct: true } },
       {
         new: true,
@@ -261,7 +273,10 @@ exports.getAllFeaturedProducts = async (req, res) => {
   try {
     const featuredProducts = await Product.find({
       featuredProduct: true,
-    }).populate("User", minusUserPrivateFields);
+    })
+      .populate("User", minusUserPrivateFields)
+      .populate("Slider")
+      .populate("Category");
     if (featuredProducts.length === 0) {
       res
         .status(404)
@@ -279,9 +294,9 @@ exports.getAllFeaturedProducts = async (req, res) => {
 /** Set Product Featured */
 exports.setProductNewArrival = async (req, res) => {
   try {
-    const { id } = req.user;
+    // const { id } = req.user;
     const newArrival = await new newArrival.findOneAndUpdate(
-      { _id: req.params.id, createdBy: id },
+      { _id: req.params.id, userId: id, sliderId: id, categoryId: id },
       { $set: { newArrival: true } },
       {
         new: true,

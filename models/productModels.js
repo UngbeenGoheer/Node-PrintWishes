@@ -44,9 +44,19 @@ const productSchema = new mongoose.Schema(
       default: false,
     },
 
-    createdBy: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    sliderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Slider",
+      required: true,
+    },
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
       required: true,
     },
   },

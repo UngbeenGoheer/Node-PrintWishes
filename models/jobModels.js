@@ -30,6 +30,11 @@ const jobSchema = new mongoose.Schema(
       type: [String], // Array of strings to list multiple responsibilities
       required: true,
     },
+    applyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Apply_now",
+      required: true,
+    },
   },
   { timestamps: true }
 );
