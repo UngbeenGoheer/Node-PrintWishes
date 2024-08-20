@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const wishlistSchema = new mongoose.Schema(
+const reviewSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,13 +12,20 @@ const wishlistSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
-    isFavorite: {
-      type: Boolean,
-      default: false,
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+      required: false,
     },
   },
   { timestamps: true }
 );
-const My_WishList = mongoose.model("My_WishList", wishlistSchema);
 
-module.exports = { My_WishList };
+const Review = mongoose.model("Review", reviewSchema);
+
+module.exports = { Review };
