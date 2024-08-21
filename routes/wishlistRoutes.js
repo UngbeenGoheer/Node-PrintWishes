@@ -13,4 +13,5 @@ wishListRouter.get("/getAll", allList);
 wishListRouter.get("/get/:id", singleWishlist);
 //wishListRouter.get("/update/:id", loginAuth, updateList);
 wishListRouter.delete("/delete/:id", deleteList);
+
 module.exports = { wishListRouter };
