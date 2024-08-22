@@ -16,6 +16,7 @@ const { jobRouter } = require("./routes/jobRoutes");
 const { applyRouter } = require("./routes/applyroutes");
 const { wishListRouter } = require("./routes/wishlistRoutes");
 const { reviewRouter } = require("./routes/reviewRoutes");
+const { orderRoutes } = require("./routes/orderRoutes");
 
 /**Tested Route  */
 
@@ -32,6 +33,7 @@ app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/apply", applyRouter);
 app.use("/api/v1/Wishlist", wishListRouter);
 app.use("/api/v1/review", reviewRouter);
+app.use("/api/v1/Order", orderRoutes);
 /**Server Setup**/
 const Start = async (req, res) => {
   try {
