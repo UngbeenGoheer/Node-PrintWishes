@@ -1,15 +1,8 @@
 const { User } = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+//const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "your-email@gmail.com",
-    pass: "your-email-password",
-  },
-});
 /**SignUp */
 exports.SignUp = async (req, res) => {
   const {
@@ -166,13 +159,7 @@ exports.VerifyOTP = async (req, res) => {
     }
     const check = await User.findOne({
       email,
-      // ap ko pata hai ya $gt kya hai???
-      //g
-      // kya hota hai/ abi ki date p hi expire hona h otp
-      // ni $gt ya gretern then ka opertor hai
-      // ya mongodb main use hota hai
-      // aur yahan pay $gt ni ana tha $lt ... less then opertor ana tha
-      // ham ya check kr ray hain k expired date l
+
       forgotPasswordOtpExpire: { $lt: Date.now() },
     });
     if (!check) {
@@ -225,12 +212,6 @@ exports.resetPwdd = async (req, res) => {
         message: "Password & Confirm Password Are Not Same",
       });
     }
-    // 1 minute...phr ya kahn jy ga ?/a
-    // confirm password store ni krtay hotay
-    // is k basic purpse bus ya hoata hai k user 2 bar password enter k
-    // confirm kr sakay k wo sahi passwrod daa raha ahi
-    //phr upr m rmv kru?gg bus wo check krnay k lia e latay hain
-    //asy hi rhy ya rmv krun ?
 
     const hashedPassword = await bcrypt.hash(password, 10);
     await User.findOneAndUpdate({ email }, { password: hashedPassword });
