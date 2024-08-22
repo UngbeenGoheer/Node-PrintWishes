@@ -1,6 +1,15 @@
 const { User } = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "your-email@gmail.com",
+    pass: "your-email-password",
+  },
+});
 /**SignUp */
 exports.SignUp = async (req, res) => {
   const {
@@ -13,6 +22,7 @@ exports.SignUp = async (req, res) => {
     city,
     address,
     password,
+    confirmPassword,
   } = req.body;
 
   if (
@@ -25,21 +35,33 @@ exports.SignUp = async (req, res) => {
       state &&
       city &&
       address &&
-      password
+      password &&
+      confirmPassword
     )
-  )
+  ) {
+    console.error("Required field missing");
     return res.status(400).json({
+      success: false,
       error: "All fields are required",
     });
+  }
+
   const Olduser = await User.findOne({ email });
   if (Olduser)
     return res.status(400).json({
       success: false,
       message: "User already Exist",
     });
+
+  if (password !== confirmPassword) {
+    console.error("Password and ConfirmPassord are not match");
+    return res.status(400).json({
+      success: false,
+      error: "Password and ConfirmPassord are not match",
+    });
+  }
   const encryptPwd = await bcrypt.hash(password, 10);
-  // if (password !== re_enterdPassword)
-  //   return res.status(400).json({ error: "Password are not Same" });
+
   const user = await User.create({
     First_name,
     last_name,
@@ -49,7 +71,7 @@ exports.SignUp = async (req, res) => {
     state,
     city,
     address,
-    role: req.body.role,
+    role: req?.body?.role ? req.body.role : undefined,
     password: encryptPwd,
   });
   const token = jwt.sign(
@@ -63,6 +85,7 @@ exports.SignUp = async (req, res) => {
   user.password = undefined;
   return res.status(200).json({ success: true, message: "User Created " });
 };
+
 /**Login */
 exports.login = async (req, res) => {
   try {
@@ -117,42 +140,47 @@ exports.forgotPwd = async (req, res) => {
         success: false,
         message: "User not Exist",
       });
-    const forgotPwdOtp = (
-      Math.floor(Math.random() * 899999) + 100000
-    ).toString();
-    const user = await User.findOneAndUpdate(
+    const Otp = (Math.floor(Math.random() * 899999) + 100000).toString();
+    await User.findOneAndUpdate(
       { email },
       {
-        forgotPwdOtp,
-        forgotPwdOtpExpire: Date.now() + 5 * 60 * 1000,
+        forgotPasswordOtp: Otp,
+        forgotPasswordOtpExpire: Date.now() + 5 * 60 * 1000,
       }
     );
-    console.log(forgotPwdOtp);
-    return res
-      .status(200)
-      .json({ success: true, message: "OTP has been transfer to your email" });
+
+    res.status(200).json({ message: `OTP is ${Otp}` });
   } catch (error) {
     return res.state(400).json({ success: false, message: error });
   }
 };
-/**VerifyPwd */
-exports.VerifyPwd = async (req, res) => {
+/**Verify OTP */
+exports.VerifyOTP = async (req, res) => {
   try {
-    const { email, forgotPwd } = req.body;
-    if (!(email && forgotPwd)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please enter your information" });
+    const { email, Otp } = req.body;
+    if (!(email && Otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all required fields",
+      });
     }
-    const check = await User.findOne({ email, OtpExpire: { $gt: Date.now() } });
+    const check = await User.findOne({
+      email,
+      // ap ko pata hai ya $gt kya hai???
+      //g
+      // kya hota hai/ abi ki date p hi expire hona h otp
+      // ni $gt ya gretern then ka opertor hai
+      // ya mongodb main use hota hai
+      // aur yahan pay $gt ni ana tha $lt ... less then opertor ana tha
+      // ham ya check kr ray hain k expired date l
+      forgotPasswordOtpExpire: { $lt: Date.now() },
+    });
     if (!check) {
       return res
         .status(400)
         .json({ success: false, message: "Session Expired" });
     }
-    if (forgotPwdOtp === check.forgotPwdOtp) {
-    }
-    if (valid) {
+    if (check.Otp === Otp) {
       await User.findOneAndUpdate(
         { email },
 
@@ -178,13 +206,13 @@ exports.resetPwdd = async (req, res) => {
         .json({ success: false, message: "Please Enter Email" });
     }
     const oldUser = await User.findOne({ email });
-    if (!oldUser.setNewPwd) {
+    if (!oldUser?.setNewPwd) {
       return res.status(400).json({
         success: false,
         message: "You are not allowed ",
       });
     }
-    const { password } = req.body;
+    const { password, confirmPassword } = req.body;
     if (!password || !confirmPassword) {
       return res.status(400).json({
         success: false,
@@ -197,12 +225,20 @@ exports.resetPwdd = async (req, res) => {
         message: "Password & Confirm Password Are Not Same",
       });
     }
+    // 1 minute...phr ya kahn jy ga ?/a
+    // confirm password store ni krtay hotay
+    // is k basic purpse bus ya hoata hai k user 2 bar password enter k
+    // confirm kr sakay k wo sahi passwrod daa raha ahi
+    //phr upr m rmv kru?gg bus wo check krnay k lia e latay hain
+    //asy hi rhy ya rmv krun ?
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.findOneAndUpdate({ email }, {});
-    return res
-      .status(200)
-      .json({ success: true, message: "Password Updated Successfully" });
+    await User.findOneAndUpdate({ email }, { password: hashedPassword });
+    return res.status(200).json({
+      success: true,
+      message: "Password Updated Successfully",
+      data: hashedPassword,
+    });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
@@ -210,25 +246,17 @@ exports.resetPwdd = async (req, res) => {
 /**GetAll */
 exports.getAll = async (req, res) => {
   try {
-    const user = await User.find();
+    const user = await User.find().select("-password");
+    if (!user) {
+      res.status(400).json({ success: true, message: "User not find", user });
+    }
     res.status(200).json({ success: true, message: "Get All user", user });
-    exports.getAuser = async (req, res) => {
-      try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-          return res
-            .status(404)
-            .json({ success: true, message: "User not found" });
-        }
-        return res.status(200).json({
-          success: true,
-          message: "Users get successfully.",
-          data: user,
-        });
-      } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-      }
-    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Users get successfully.",
+      data: user,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -237,7 +265,7 @@ exports.getAll = async (req, res) => {
 
 exports.getAuser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select("-password");
     if (!user) {
       return res.status(404).json({ success: true, message: "User not found" });
     }

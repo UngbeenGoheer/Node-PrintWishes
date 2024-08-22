@@ -6,18 +6,18 @@ const {
   SignUp,
   login,
   resetPwdd,
-  VerifyPwd,
   forgotPwd,
   getAll,
   getAuser,
   UpdateUser,
   DeleteUser,
+  VerifyOTP,
 } = require("../controllers/userController");
 userRouter.post("/create", SignUp);
 userRouter.post("/login", login);
 userRouter.post("/forgot", forgotPwd);
 userRouter.post("/reset", resetPwdd);
-userRouter.post("/verify", VerifyPwd);
+userRouter.post("/verify", VerifyOTP);
 userRouter.get("/getAll", getAll);
 userRouter.get("/get/:id", loginAuth, getAuser);
 userRouter.post("/update/:id", UpdateUser);

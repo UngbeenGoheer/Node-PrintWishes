@@ -1,4 +1,5 @@
 const { Category } = require("../models/categoryModels");
+const { trimObjects } = require("../utils/trimObjects");
 
 /**Create category */
 exports.newCategory = async (req, res) => {
