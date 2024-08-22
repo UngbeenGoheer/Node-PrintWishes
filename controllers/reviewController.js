@@ -6,29 +6,31 @@ exports.newReview = async (req, res) => {
   try {
     const { userId, productId, rating, comment } = req.body;
 
-    const reviewProduct = await Review.create(req.body);
-    if (!reviewProduct) {
+    if (!(userId && productId && rating && comment)) {
+      console.error("All required fields must be provided");
       return res.status(400).json({
-        success: true,
-        message: "All feilds are necessary .",
+        success: false,
+        message: "All required fields must be provided",
       });
     }
+
+    const newReview = await Review.create(req.body);
     return res.status(200).json({
       success: true,
       message: "Review Product.",
+      data: newReview,
     });
   } catch (error) {
+    console.error(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
 // Get all reviews for a product
 exports.getProductReviews = async (req, res) => {
   try {
-    const reviews = await Review.find({
-      productId: req.params.productId,
-    }).populate("userId");
+    const reviews = await Review.find({}).populate("userId");
     if (!reviews) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: true,
         message: "Not Found Any review.",
       });
@@ -38,6 +40,7 @@ exports.getProductReviews = async (req, res) => {
       message: "Fetched ALL reviews .",
     });
   } catch (error) {
+    console.error(error);
     res.status(400).json({ success: false, error: error.message });
   }
 };
@@ -62,16 +65,17 @@ exports.getReviewById = async (req, res) => {
 };
 /**update Review */
 exports.updateReview = async (req, res) => {
-  const { rating, comment } = req.body;
-
-  if (typeof rating !== "number" || rating < 1 || rating > 5) {
-    return res.status(400).json({ message: "Invalid rating" });
-  }
   try {
+    const { rating, comment } = req.body;
+
+    if (typeof rating !== "number" || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Invalid rating" });
+    }
+
     const updatedReview = await Review.findByIdAndUpdate(
       req.params.id,
       { rating, comment },
-      { new: true }
+      { new: true, upsert: true }
     ).populate("userId");
     if (!updatedReview) {
       return res

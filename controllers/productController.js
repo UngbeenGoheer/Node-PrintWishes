@@ -11,13 +11,40 @@ exports.createProduct = async (req, res) => {
     const { name, discription, priceBeforeDiscount, sliderId, categoryId } =
       req.body;
 
-    if (
-      !(name && discription && priceBeforeDiscount && sliderId && categoryId)
-    ) {
-      console.error("Name, discription and Price are required fields.");
+    if (!name) {
+      console.error("Name is required fields.");
       return res.status(400).json({
         success: false,
-        message: "Name, discription and Price are required fields.",
+        message: "Name is required fields.",
+      });
+    }
+
+    if (!discription) {
+      console.error("Discription is required field.");
+      return res.status(400).json({
+        success: false,
+        message: "Discription is required field.",
+      });
+    }
+    if (!priceBeforeDiscount) {
+      console.error("priceBeforeDiscount is required field.");
+      return res.status(400).json({
+        success: false,
+        message: "priceBeforeDiscount is required field.",
+      });
+    }
+    if (!sliderId) {
+      console.error("sliderId is required field.");
+      return res.status(400).json({
+        success: false,
+        message: "sliderId is required field.",
+      });
+    }
+    if (!categoryId) {
+      console.error("categoryId is required field.");
+      return res.status(400).json({
+        success: false,
+        message: "categoryId is required field.",
       });
     }
 

@@ -9,9 +9,9 @@ const {
 } = require("../controllers/wishlistController");
 
 wishListRouter.post("/create", loginAuth, newWishlist);
-wishListRouter.get("/getAll", allList);
-wishListRouter.get("/get/:id", singleWishlist);
+wishListRouter.get("/getAll", loginAuth, allList);
+wishListRouter.get("/get/:id", loginAuth, singleWishlist);
 //wishListRouter.get("/update/:id", loginAuth, updateList);
-wishListRouter.delete("/delete/:id", deleteList);
+wishListRouter.delete("/delete/:id", loginAuth, deleteList);
 
 module.exports = { wishListRouter };
