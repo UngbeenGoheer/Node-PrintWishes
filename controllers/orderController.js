@@ -45,3 +45,73 @@ exports.allOrders = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+/**GetOne */
+exports.getAorder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("userId", minusUserPrivateFields)
+      .populate("productId");
+    if (!order) {
+      res.status(200).json({
+        success: true,
+        message: "order  is not Found.",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Order fetched successfully.",
+      data: order,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+/**Update Order */
+exports.updateOrder = async (req, res) => {
+  try {
+    const updateorder = await Order.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updateorder) {
+      console.error("order  is not Found.");
+      res.status(200).json({
+        success: true,
+        message: "order  is not Found.",
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Order Update successfully.",
+        data: updateorder,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+/** Delete Order */
+exports.deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findOneAndDelete(req.params.id);
+    if (order) {
+      console.error("order  is not Found.");
+      res.status(200).json({
+        success: true,
+        message: "order  is not Found.",
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Order Deleted successfully.",
+        data: order,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
