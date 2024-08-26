@@ -77,20 +77,19 @@ exports.updateOrder = async (req, res) => {
 
     if (!updateorder) {
       console.error("order  is not Found.");
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "order  is not Found.",
       });
-
-      res.status(200).json({
-        success: true,
-        message: "Order Update successfully.",
-        data: updateorder,
-      });
     }
+    return res.status(200).json({
+      success: true,
+      message: "Order Update successfully.",
+      data: updateorder,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
 /** Delete Order */
@@ -99,12 +98,12 @@ exports.deleteOrder = async (req, res) => {
     const order = await Order.findOneAndDelete(req.params.id);
     if (order) {
       console.error("order  is not Found.");
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "order  is not Found.",
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Order Deleted successfully.",
         data: order,
@@ -112,6 +111,6 @@ exports.deleteOrder = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
